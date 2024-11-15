@@ -1,10 +1,14 @@
 extern crate crossterm;
+
 use crossterm::style;
 use crate::screen::Screen;
 
 use crate::days::{CalendarDay, RunStatus};
 
-pub fn draw_debug_info(screen: &mut Screen, mouse_position: (u16, u16), mouse_down: bool, dt: f64,
+pub fn draw_debug_info(
+    screen: &mut Screen,
+    mouse_position: (u16, u16),
+    mouse_down: bool, dt: f64,
     day_to_run: Option<usize>,
     day_status: &RunStatus,
 ) {
@@ -126,7 +130,7 @@ pub fn draw_question(screen: &mut Screen, mouse_position: (u16, u16), mouse_down
         }
 }
 
-fn draw_text_box(screen: &mut Screen, width: u16, height: u16, q: &str, x_offset: i16, y_offset: i16, mouse_position: (u16, u16), mouse_down: bool) -> bool{
+fn draw_text_box(screen: &mut Screen, width: u16, height: u16, q: &str, x_offset: i16, y_offset: i16, mouse_position: (u16, u16), mouse_down: bool) -> bool {
     let question = q;
     let x_origin = ((width as i16 - question.len() as i16) / 2 + x_offset) as u16;
     let y_origin = (height as i16 / 2 + y_offset) as u16;

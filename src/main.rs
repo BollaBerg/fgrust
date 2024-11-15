@@ -5,6 +5,10 @@ mod snowflakes;
 mod days;
 mod drawing;
 mod cannon_game;
+mod state_machine;
+mod states {
+    pub mod main_state;
+}
 
 use crate::screen::Screen;
 use crossterm::event::read;
@@ -27,27 +31,22 @@ fn delta_time(previous_time: &mut Instant) -> f64 {
     dt
 }
 
-struct Snowflake {
-    x: f64,
-    y: f64,
-    speed: f64,
-    sprite: char,
-}
-
 fn main() -> Result<(), Error> {
     let mut resize = true;
 
     let mut screen = Screen::new(stdout(), terminal::size()?);
     screen.init()?;
 
-    let mut snow_flakes: Vec<Snowflake> = snowflakes::create(screen.width(), screen.height());
+    let initial_state = states::main_state::MainState::new();
+    let mut state_machine = state_machine::StateMachine::new();
+    state_machine.change(&mut screen, Some(Box::new(initial_state)));
+
 
     let mut dt;
     let mut previous_time = Instant::now();
 
     let mut mouse_position = (0, 0);
     let mut mouse_down = false;
-    let mut phase = 0.0;
 
 
     let days = [
@@ -67,21 +66,10 @@ fn main() -> Result<(), Error> {
         if resize {
             screen.resize(terminal::size()?);
             resize = false;
-
-            snow_flakes = snowflakes::create(screen.width(), screen.height());
         }
 
-        phase += dt;
-        snowflakes::update(screen.width(), screen.height(), phase, dt, &mut snow_flakes);
-
         screen.clear();
-        let screen_height = screen.height();
-        let screen_width = screen.width();
-        draw_ascii(&mut screen, ascii::SANTA, 2, screen_height - 20);
-        snowflakes::draw(&mut screen, &snow_flakes);
-        draw_ascii(&mut screen, ascii::SYSTEK, screen_width / 2 - 32, 1);
-        draw_ground(&mut screen);
-        draw_debug_info(&mut screen, mouse_position, mouse_down, dt, day_to_run, &day_status);
+        state_machine.update(&mut screen, dt);
 
         if day_to_run.is_none() || day_status == RunStatus::CORRECT {
             day_to_run = draw_calendar(
@@ -98,6 +86,8 @@ fn main() -> Result<(), Error> {
                 mouse_down,
             );
         }
+
+        draw_debug_info(&mut screen, mouse_position, mouse_down, dt, day_to_run, &day_status);
 
         screen.render();
 

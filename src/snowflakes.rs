@@ -1,6 +1,12 @@
 use crossterm::style;
 use crate::screen::Screen;
-use crate::Snowflake;
+
+pub struct Snowflake {
+    x: f64,
+    y: f64,
+    speed: f64,
+    sprite: char,
+}
 
 pub fn create(width: u16, height: u16) -> Vec<Snowflake> {
     let snow_flake_sprites = vec!['*', '·', '•'];
@@ -17,7 +23,7 @@ pub fn create(width: u16, height: u16) -> Vec<Snowflake> {
     snow_flakes
 }
 
-pub fn update(width: u16, height: u16, phase: f64, dt: f64, snow_flakes: &mut Vec<Snowflake>) {
+pub fn update(snow_flakes: &mut Vec<Snowflake>, width: u16, height: u16, phase: f64, dt: f64) {
     for snow_flake in snow_flakes.iter_mut() {
         snow_flake.y += snow_flake.speed * dt;
         snow_flake.x += (phase + snow_flake.x / 8.0).sin() * 1.0 * dt;
