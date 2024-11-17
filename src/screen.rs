@@ -119,7 +119,8 @@ impl Screen {
         let index = self.xy_to_index(x, y);
 
         if x >= self.width || y >= self.height {
-            panic!("Attempted to set cell outside of screen bounds (x: {}, y: {}, i: {}, len: {})", x, y, index, self.buffer.len());
+            // panic!("Attempted to set cell outside of screen bounds (x: {}, y: {}, i: {}, len: {})", x, y, index, self.buffer.len());
+            return;
         }
 
         if x >= self.real_width || y >= self.real_height {
