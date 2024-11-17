@@ -3,8 +3,6 @@ extern crate crossterm;
 use crossterm::style;
 use crate::screen::Screen;
 
-use crate::days::{CalendarDay, RunStatus};
-
 pub fn draw_debug_info(
     screen: &mut Screen,
     mouse_position: (u16, u16),

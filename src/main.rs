@@ -2,7 +2,6 @@ extern crate crossterm;
 mod ascii;
 mod screen;
 mod snowflakes;
-mod days;
 mod drawing;
 mod cannon_game;
 mod state_machine;
@@ -14,18 +13,12 @@ mod states {
 }
 
 use crate::screen::Screen;
-use crossterm::event::read;
-use crossterm::{event, terminal};
+use crossterm::terminal;
 use std::io::{stdout, Error};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
-use std::time;
-use time::Duration;
 
-use days::{create_quiz_day, CalendarDay, RunStatus};
-use drawing::{
-    draw_ascii, draw_calendar, draw_debug_info, draw_ground, 
-};
+use drawing::draw_debug_info;
 
 fn delta_time(previous_time: &mut Instant) -> f64 {
     let new_time = Instant::now();

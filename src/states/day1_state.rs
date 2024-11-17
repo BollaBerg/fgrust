@@ -2,7 +2,6 @@ use crate::input::Input;
 use crate::screen::Screen;
 use crate::state_machine::State;
 use rand::{thread_rng, Rng};
-use crate::days::RunStatus;
 use crate::drawing::draw_question;
 use crate::states::main_state::MainState;
 
@@ -34,7 +33,7 @@ impl State for Day1State {
     }
 
     fn update(&mut self, screen: &mut Screen, input: &mut Input, _dt: f64) -> Option<Box<dyn State>> {
-        let mut status = RunStatus::RUNNING;
+        let mut correct = false;
         draw_question(
             screen,
             input.mouse_position(),
@@ -43,10 +42,10 @@ impl State for Day1State {
             &self.correct_answer,
             &self.wrong_answers,
             self.correct_answer_position,
-            &mut || status = RunStatus::CORRECT,
+            &mut || correct = true,
         );
 
-        if status == RunStatus::CORRECT {
+        if correct {
             return Some(Box::new(MainState::new()));
         }
 
