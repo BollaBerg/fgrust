@@ -2,14 +2,24 @@ use crate::input::Input;
 use crate::screen::Screen;
 use crate::state_machine::State;
 use rand::{thread_rng, Rng};
-use crate::drawing::draw_question;
+use crate::ascii::{LAZY_CAT, PRESENT};
+use crate::drawing::{draw_ascii, draw_question};
 use crate::states::main_state::MainState;
+
+struct Particle {
+    x: f64,
+    y: f64,
+    sprite: char,
+}
 
 pub struct Day1State {
     question: String,
     correct_answer: String,
     wrong_answers: [&'static str; 2],
     correct_answer_position: usize,
+
+    phase: f64,
+    particles: Vec<Particle>,
 }
 
 impl Day1State {
@@ -24,15 +34,32 @@ impl Day1State {
             correct_answer,
             wrong_answers,
             correct_answer_position,
+
+            phase: 0.0,
+            particles: vec![],
         }
     }
 }
 
 impl State for Day1State {
     fn enter(&mut self, screen: &mut Screen, input: &mut Input) {
+        self.particles = create_particles(screen);
     }
 
-    fn update(&mut self, screen: &mut Screen, input: &mut Input, _dt: f64) -> Option<Box<dyn State>> {
+    fn update(&mut self, screen: &mut Screen, input: &mut Input, dt: f64) -> Option<Box<dyn State>> {
+
+        self.phase += dt;
+
+        draw_ascii(screen, PRESENT, 12, screen.height() - 24);
+
+        {
+            let cat_x = screen.width() - 50;
+            let cat_y = screen.height() - 12;
+
+            draw_ascii(screen, LAZY_CAT, cat_x, cat_y);
+            draw_particles(screen, &mut self.particles, cat_x, cat_y, self.phase, dt);
+        }
+
         let mut correct = false;
         draw_question(
             screen,
@@ -53,5 +80,25 @@ impl State for Day1State {
     }
 
     fn exit(&mut self, screen: &mut Screen, input: &mut Input) {
+    }
+}
+
+fn create_particles(screen: &mut Screen) -> Vec<Particle> {
+    let mut particles = Vec::new();
+    for i in 0..3 {
+        particles.push(Particle {
+            x: i as f64 * 2.0,
+            y: i as f64 * 2.0,
+            sprite: 'Z',
+        });
+    }
+    particles
+}
+
+fn draw_particles(screen: &mut Screen, particles: &mut Vec<Particle>, x:u16, y:u16, phase: f64, dt: f64) {
+    let particle_amplitude = 4.0;
+    for (i, particle) in particles.iter_mut().enumerate() {
+        particle.x += (phase * 2.0 + particle.y).sin() * particle_amplitude * dt;
+        screen.set_cell(x + particle.x as u16, y + particle.y as u16, particle.sprite, crossterm::style::Color::White);
     }
 }

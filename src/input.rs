@@ -12,7 +12,6 @@ pub struct Input {
     mouse_down: bool,
     mouse_up: bool,
 }
-
 impl Input {
     pub fn new() -> Input {
         Input {
