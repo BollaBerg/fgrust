@@ -16,7 +16,6 @@ mod states {
 use crate::screen::Screen;
 use crossterm::terminal;
 use std::io::{stdout, Error};
-use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 use drawing::draw_debug_info;
