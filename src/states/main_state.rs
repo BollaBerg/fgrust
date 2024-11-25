@@ -52,7 +52,7 @@ impl State for MainState {
         if let Some(ref day) = draw_calendar(screen, input.mouse_position(), input.is_mouse_up()) {
             return match day {
                 1 => Some(Box::new(states::day1_state::Day1State::new())),
-                // 2 => Some(Box::new(states::day2_state::Day2State::new())),
+                2 => Some(Box::new(states::day2_state::Day2State::new())),
                 // 3 => Some(Box::new(states::day3_state::Day3State::new())),
                 // 4 => Some(Box::new(states::day4_state::Day4State::new())),
                 // 5 => Some(Box::new(states::day5_state::Day5State::new())),

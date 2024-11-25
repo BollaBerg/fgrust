@@ -50,7 +50,7 @@ impl State for Day1State {
 
         self.phase += dt;
 
-        draw_ascii(screen, TREE_FIREPLACE, screen.width()-43, (screen.height() as i16 - 40).clamp(0, screen.height() as i16) as u16);
+        draw_ascii(screen, TREE_FIREPLACE, screen.width() - 43, (screen.height() as i16 - 40).clamp(0, screen.height() as i16) as u16);
         draw_ascii(screen, PRESENT, 12, screen.height() - 26);
 
         {
