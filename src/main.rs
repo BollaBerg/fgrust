@@ -20,6 +20,7 @@ use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 use drawing::draw_debug_info;
+use crate::input::MouseButton;
 
 fn delta_time(previous_time: &mut Instant) -> f64 {
     let new_time = Instant::now();
@@ -29,22 +30,7 @@ fn delta_time(previous_time: &mut Instant) -> f64 {
 }
 
 fn main() -> Result<(), Error> {
-    let exit = Arc::new(Mutex::new(false));
-    let resize = Arc::new(Mutex::new(true));
-
-    let exit_clone = Arc::clone(&exit);
-    let resize_clone = Arc::clone(&resize);
-
     let mut input = input::Input::new();
-    input.bind_key('q', move || {
-        let mut exit = exit_clone.lock().unwrap();
-        *exit = true;
-    });
-
-    input.bind_resize(move |_width: u16, _height:u16| {
-        let mut resize = resize_clone.lock().unwrap();
-        *resize = true;
-    });
 
     let mut screen = Screen::new(stdout(), terminal::size()?);
     screen.init()?;
@@ -57,12 +43,12 @@ fn main() -> Result<(), Error> {
     let mut previous_time = Instant::now();
 
     loop {
-        if *exit.lock().unwrap() {
+        if input.is_key_up('q') {
             break;
         }
-        if *resize.lock().unwrap() {
-            screen.resize(terminal::size()?);
-            *resize.lock().unwrap() = false;
+
+        if let Some(size) = input.resized() {
+            screen.resize(size);
         }
 
         screen.clear();
@@ -71,7 +57,7 @@ fn main() -> Result<(), Error> {
         
         state_machine.update(&mut screen, &mut input, dt);
 
-        draw_debug_info(&mut screen, input.mouse_position(), input.is_mouse_down(), dt);
+        draw_debug_info(&mut screen, input.mouse_position(), input.is_mouse_up(MouseButton::Left), dt);
 
         screen.render();
 

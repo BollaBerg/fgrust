@@ -4,47 +4,111 @@ use std::time::Duration;
 use crossterm::event;
 use crossterm::event::{read, Event};
 
+pub enum InputEvent {
+    Down,
+    Up,
+}
+
+pub enum MouseButton {
+    Left,
+    Right,
+    Middle,
+}
+
 pub struct Input {
-    keymap: HashMap<event::KeyCode, Box<dyn FnMut()>>,
-    resize_callback: Option<Box<dyn FnMut(u16, u16)>>,
+    keymap: HashMap<event::KeyCode, Option<InputEvent>>,
+    resize: Option<(u16, u16)>,
 
     mouse_position: (u16, u16),
-    mouse_down: bool,
-    mouse_up: bool,
+    mousemap: HashMap<event::MouseButton, Option<InputEvent>>,
 }
+
 impl Input {
     pub fn new() -> Input {
         Input {
             keymap: HashMap::new(),
-            resize_callback: None,
+            resize: None,
             mouse_position: (0, 0),
-            mouse_down: false,
-            mouse_up: false,
+            mousemap: HashMap::new(),
         }
     }
 
     pub fn mouse_position(&self) -> (u16, u16) {
         self.mouse_position
     }
+    
+    pub fn is_key_down(&self, key: char) -> bool {
+        let key = event::KeyCode::Char(key);
+        if let Some(event) = self.keymap.get(&key) {
+            if let Some(InputEvent::Down) = event {
+                return true;
+            }
+        }
 
-    pub fn is_mouse_down(&self) -> bool {
-        self.mouse_down
+        false
+    }
+    
+    pub fn is_key_up(&self, key: char) -> bool {
+        let key = event::KeyCode::Char(key);
+        if let Some(event) = self.keymap.get(&key) {
+            if let Some(InputEvent::Up) = event {
+                return true;
+            }
+        }
+
+        false
     }
 
-    pub fn is_mouse_up(&self) -> bool {
-        self.mouse_up
+    pub fn is_mouse_down(&self, button: MouseButton) -> bool {
+        let button = match button {
+            MouseButton::Left => event::MouseButton::Left,
+            MouseButton::Right => event::MouseButton::Right,
+            MouseButton::Middle => event::MouseButton::Middle,
+        };
+        
+        if let Some(event) = self.mousemap.get(&button) {
+            if let Some(InputEvent::Down) = event {
+                return true;
+            }
+        }
+        
+        false
     }
 
-    pub fn bind_key<F>(&mut self, key: char, callback: F) where F: FnMut() + 'static, {
-        self.keymap.insert(event::KeyCode::Char(key), Box::new(callback));
+    pub fn is_mouse_up(&self, button: MouseButton) -> bool {
+        let button = match button {
+            MouseButton::Left => event::MouseButton::Left,
+            MouseButton::Right => event::MouseButton::Right,
+            MouseButton::Middle => event::MouseButton::Middle,
+        };
+        
+        if let Some(event) = self.mousemap.get(&button) {
+            if let Some(InputEvent::Up) = event {
+                return true;
+            }
+        }
+        
+        false
     }
 
-    pub fn bind_resize<F>(&mut self, callback: F) where F: FnMut(u16, u16) + 'static, {
-        self.resize_callback = Some(Box::new(callback));
+    pub fn resized(&self) -> Option<(u16, u16)> {
+        self.resize
     }
 
     pub fn update(&mut self) -> Result<(), Error> {
-        self.mouse_up = false;
+        for (_, event) in self.mousemap.iter_mut() {
+            if let Some(InputEvent::Up) = event {
+                *event = None;
+            }
+        }
+        
+        for (_, event) in self.keymap.iter_mut() {
+            if let Some(InputEvent::Up) = event {
+                *event = None;
+            }
+        }
+        
+        self.resize = None;
         
         if event::poll(Duration::from_millis(0))? {
             let raw = read();
@@ -56,26 +120,27 @@ impl Input {
             let event = raw?;
 
             if let Event::Key(event) = event {
-                if let Some(callback) = self.keymap.get_mut(&event.code) {
-                    callback();
+                if event.kind == event::KeyEventKind::Press {
+                    self.keymap.insert(event.code, Some(InputEvent::Down));
+                }
+                else if event.kind == event::KeyEventKind::Release {
+                    self.keymap.insert(event.code, Some(InputEvent::Up));
                 }
             }
             else if let Event::Mouse(event) = event {
                 if let event::MouseEventKind::Moved = event.kind {
                     self.mouse_position = (event.column, event.row);
                 }
-                if let event::MouseEventKind::Down(event::MouseButton::Left) = event.kind {
-                    self.mouse_down = true;
+
+                if let event::MouseEventKind::Down(button) = event.kind {
+                    self.mousemap.insert(button, Some(InputEvent::Down));
                 }
-                if let event::MouseEventKind::Up(event::MouseButton::Left) = event.kind {
-                    self.mouse_down = false;
-                    self.mouse_up = true;
+                else if let event::MouseEventKind::Up(button) = event.kind {
+                    self.mousemap.insert(button, Some(InputEvent::Up));
                 }
             }
             else if let Event::Resize(width, height) = event {
-                if let Some(ref mut callback) = self.resize_callback {
-                    callback(width, height);
-                }
+                self.resize = Some((width, height));
             }
         }
 

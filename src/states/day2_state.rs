@@ -1,6 +1,6 @@
 use rand::seq::SliceRandom;
 use crate::drawing::draw_text_box;
-use crate::input::Input;
+use crate::input::{Input, MouseButton};
 use crate::screen::Screen;
 use crate::state_machine::State;
 use crate::states::main_state::MainState;
@@ -85,10 +85,10 @@ impl State for Day2State {
                 x,
                 y,
                 input.mouse_position(),
-                input.is_mouse_down(),
+                input.is_mouse_up(MouseButton::Left),
             );
 
-            if hovered && input.is_mouse_up() {
+            if hovered && input.is_mouse_up(MouseButton::Left) {
                 if self.selected.len() == 1 && self.selected[0] == i {
                     continue;
                 }
@@ -135,9 +135,9 @@ impl State for Day2State {
             0,
             12,
             input.mouse_position(),
-            input.is_mouse_down(),
+            input.is_mouse_up(MouseButton::Left),
         );
-        if exit && input.is_mouse_up() {
+        if exit && input.is_mouse_up(MouseButton::Left) {
             return Some(Box::new(MainState::new()));
         }
 

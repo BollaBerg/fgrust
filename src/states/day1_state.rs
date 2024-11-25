@@ -1,9 +1,8 @@
-use crate::input::Input;
+use crate::input::{Input, MouseButton};
 use crate::screen::Screen;
 use crate::state_machine::State;
 use rand::{thread_rng, Rng};
 use crate::drawing::{draw_ascii, draw_question};
-use crate::snowflakes::draw;
 use crate::states::main_state::MainState;
 
 struct Particle {
@@ -65,7 +64,7 @@ impl State for Day1State {
         draw_question(
             screen,
             input.mouse_position(),
-            input.is_mouse_up(),
+            input.is_mouse_up(MouseButton::Left),
             &self.question,
             &self.correct_answer,
             &self.wrong_answers,

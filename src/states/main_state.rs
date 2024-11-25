@@ -2,7 +2,7 @@ use crate::drawing::{draw_ascii, draw_calendar, draw_ground};
 use crate::state_machine::State;
 use crate::screen::Screen;
 use crate::{ascii, snowflakes, states};
-use crate::input::Input;
+use crate::input::{Input, MouseButton};
 use crate::snowflakes::Snowflake;
 
 pub struct MainState {
@@ -49,7 +49,7 @@ impl State for MainState {
         draw_ascii(screen, ascii::SYSTEK, screen_width / 2 - 32, 1);
         draw_ground(screen);
         
-        if let Some(ref day) = draw_calendar(screen, input.mouse_position(), input.is_mouse_up()) {
+        if let Some(ref day) = draw_calendar(screen, input.mouse_position(), input.is_mouse_up(MouseButton::Left)) {
             return match day {
                 1 => Some(Box::new(states::day1_state::Day1State::new())),
                 2 => Some(Box::new(states::day2_state::Day2State::new())),
