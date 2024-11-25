@@ -32,6 +32,14 @@ impl Input {
             mousemap: HashMap::new(),
         }
     }
+    
+    pub fn keymap(&self) -> &HashMap<event::KeyCode, Option<InputEvent>> {
+        &self.keymap
+    }
+    
+    pub fn mousemap(&self) -> &HashMap<event::MouseButton, Option<InputEvent>> {
+        &self.mousemap
+    }
 
     pub fn mouse_position(&self) -> (u16, u16) {
         self.mouse_position
@@ -102,11 +110,13 @@ impl Input {
             }
         }
         
-        for (_, event) in self.keymap.iter_mut() {
+        self.keymap.retain(|_, event| {
             if let Some(InputEvent::Up) = event {
-                *event = None;
+                false
+            } else {
+                true
             }
-        }
+        });
         
         self.resize = None;
         
@@ -131,8 +141,7 @@ impl Input {
                 if let event::MouseEventKind::Moved = event.kind {
                     self.mouse_position = (event.column, event.row);
                 }
-
-                if let event::MouseEventKind::Down(button) = event.kind {
+                else if let event::MouseEventKind::Down(button) = event.kind {
                     self.mousemap.insert(button, Some(InputEvent::Down));
                 }
                 else if let event::MouseEventKind::Up(button) = event.kind {

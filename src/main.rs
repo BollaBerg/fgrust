@@ -19,7 +19,6 @@ use std::io::{stdout, Error};
 use std::time::Instant;
 
 use drawing::draw_debug_info;
-use crate::input::MouseButton;
 
 fn delta_time(previous_time: &mut Instant) -> f64 {
     let new_time = Instant::now();
@@ -56,7 +55,7 @@ fn main() -> Result<(), Error> {
         
         state_machine.update(&mut screen, &mut input, dt);
 
-        draw_debug_info(&mut screen, input.mouse_position(), input.is_mouse_up(MouseButton::Left), dt);
+        draw_debug_info(&mut screen, &mut input, dt);
 
         screen.render();
 

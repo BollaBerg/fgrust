@@ -1,26 +1,55 @@
 extern crate crossterm;
 
 use crossterm::style;
+use crate::input::{Input, InputEvent, MouseButton};
 use crate::screen::Screen;
 
 pub fn draw_debug_info(
     screen: &mut Screen,
-    mouse_position: (u16, u16),
-    mouse_down: bool, dt: f64,
+    input: &mut Input,
+    dt: f64,
 ) {
     let fps_str = format!("FPS: {:.0}", 1.0 / dt);
     for (i, c) in fps_str.chars().enumerate() {
         screen.set_cell(i as u16, 0, c, style::Color::White);
     }
 
-    let mouse_pos_str = format!("Mouse: ({}, {})", mouse_position.0, mouse_position.1);
+    let mouse_pos_str = format!("Mouse: ({}, {})", input.mouse_position().0, input.mouse_position().1);
     for (i, c) in mouse_pos_str.chars().enumerate() {
         screen.set_cell(i as u16, 1, c, style::Color::White);
     }
 
-    let mouse_down_str = format!("Mouse Down: {}", mouse_down);
-    for (i, c) in mouse_down_str.chars().enumerate() {
-        screen.set_cell(i as u16, 2, c, style::Color::White);
+    let mouse_buttons = vec![
+        (input.is_mouse_down(MouseButton::Left), "Left"),
+        (input.is_mouse_down(MouseButton::Middle), "Middle"),
+        (input.is_mouse_down(MouseButton::Right), "Right"),
+    ];
+
+    for (i, (is_down, button)) in mouse_buttons.iter().enumerate() {
+        let mouse_down_str = format!("Mouse {}: {}", button, is_down);
+        for (j, c) in mouse_down_str.chars().enumerate() {
+            screen.set_cell(j as u16, (i + 2) as u16, c, style::Color::White);
+        }
+    }
+
+    // draw all keys that are pressed
+    let keymap = input.keymap();
+    for (i, (key, input_event)) in keymap.iter().enumerate() {
+        match input_event {
+            Some(InputEvent::Down) => {
+                let key_str = format!("Key {}: Down", key);
+                for (j, c) in key_str.chars().enumerate() {
+                    screen.set_cell(j as u16, (i + 5) as u16, c, style::Color::White);
+                }
+            }
+            Some(InputEvent::Up) => {
+                let key_str = format!("Key {}: Up", key);
+                for (j, c) in key_str.chars().enumerate() {
+                    screen.set_cell(j as u16, (i + 5) as u16, c, style::Color::White);
+                }
+            }
+            None => {}
+        }
     }
 }
 
