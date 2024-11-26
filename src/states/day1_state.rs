@@ -5,7 +5,6 @@ use rand::{thread_rng, Rng};
 use crate::drawing::{draw_ascii, draw_question};
 use crate::states::main_state::MainState;
 use crate::states::transition_state::TransitionState;
-use crate::transition::Transition;
 
 struct Particle {
     x: f64,
@@ -47,7 +46,7 @@ impl State for Day1State {
         self.particles = create_particles(screen);
     }
 
-    fn update(&mut self, screen: &mut Screen, input: &mut Input, transition: &mut Transition, dt: f64) -> Option<Box<dyn State>> {
+    fn update(&mut self, screen: &mut Screen, input: &mut Input, dt: f64) -> Option<Box<dyn State>> {
 
         self.phase = (self.phase + dt) % 2.0;
 
@@ -100,7 +99,7 @@ fn create_particles(screen: &mut Screen) -> Vec<Particle> {
 
 fn draw_particles(screen: &mut Screen, particles: &mut Vec<Particle>, x:u16, y:u16, phase: f64, dt: f64) {
     let particle_amplitude = 4.0;
-    for (i, particle) in particles.iter_mut().enumerate() {
+    for (_i, particle) in particles.iter_mut().enumerate() {
         particle.x += (phase * 2.0 + particle.y).sin() * particle_amplitude * dt;
         screen.set_cell(x + particle.x as u16, y + particle.y as u16, particle.sprite, crossterm::style::Color::White);
     }

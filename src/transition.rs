@@ -1,3 +1,5 @@
+use std::time::Duration;
+use crossterm::style;
 use crate::screen::Screen;
 
 struct Cell {
@@ -5,7 +7,6 @@ struct Cell {
     y: u16,
     alive: bool,
 }
-
 pub enum TransitionState {
     In,
     Out,
@@ -13,14 +14,16 @@ pub enum TransitionState {
 
 pub struct Transition {
     cells: Vec<Cell>,
+    duration: Duration,
     timer: f64,
     state: Option<TransitionState>,
 }
 
 impl Transition {
-    pub fn new() -> Transition {
+    pub fn new(duration: Duration) -> Transition {
         Transition {
             cells: Vec::new(),
+            duration,
             timer: 0.0,
             state: None,
         }
@@ -31,9 +34,13 @@ impl Transition {
             .flat_map(|x| (0..height).map(move |y| Cell { x, y, alive: false }))
             .collect();
     }
-    
-    pub fn running(&self) -> bool {
-        self.state.is_some()
+
+    pub fn state(&self) -> Option<TransitionState> {
+        match self.state {
+            Some(TransitionState::In) => Some(TransitionState::In),
+            Some(TransitionState::Out) => Some(TransitionState::Out),
+            None => None,
+        }
     }
 
     pub fn change_state(&mut self, state: TransitionState) {
@@ -42,8 +49,8 @@ impl Transition {
 
         for cell in &mut self.cells {
             cell.alive = match self.state {
-                Some(TransitionState::In) => true,
-                Some(TransitionState::Out) => false,
+                Some(TransitionState::In) => false,
+                Some(TransitionState::Out) => true,
                 None => false,
             };
         }
@@ -52,6 +59,7 @@ impl Transition {
     pub fn update(&mut self, screen: &mut Screen, dt: f64) -> bool {
         self.timer += dt;
 
+        let normalized_timer = self.timer / self.duration.as_secs_f64();
         let center_x = screen.width() as f64 / 2.0;
         let center_y = screen.height() as f64 / 2.0;
 
@@ -60,32 +68,31 @@ impl Transition {
             let dy = (cell.y as f64 - center_y) / center_y;
             let distance = (dx * dx + dy * dy).sqrt();
 
-            match self.state {
-                Some(TransitionState::In) => {
-                    cell.alive = distance > self.timer;
-                }
-                Some(TransitionState::Out) => {
-                    cell.alive = distance < self.timer;
-                }
-                None => {
-                }
-            }
+            let distance = distance / 1.5;
+
+            cell.alive = match self.state {
+                Some(TransitionState::In) => distance < normalized_timer,
+                Some(TransitionState::Out) => distance > normalized_timer,
+                None => false,
+            };
         }
 
-        // depending on the state, when all the cells are alive or dead, change state to None
-        let all_alive = self.cells.iter().all(|cell| cell.alive);
-        let all_dead = self.cells.iter().all(|cell| !cell.alive);
-        if all_alive || all_dead {
-            self.state = None;
-        }
-        
-        self.state.is_none()
+        self.timer >= self.duration.as_secs_f64()
     }
 
     pub fn draw(&self, screen: &mut Screen) {
+        const PATTERN: [[char; 8]; 4] = [
+            [' ', '_', '|', '_', ' ', ' ', ' ', ' '],
+            [' ', ' ', '|', ' ', ' ', ' ', ' ', ' '],
+            [' ', ' ', ' ', ' ', '_', '|', '_', ' '],
+            [' ', ' ', ' ', ' ', ' ', '|', ' ', ' ']
+        ];
+
         for cell in &self.cells {
             if cell.alive {
-                screen.set_cell(cell.x, cell.y, 'O', crossterm::style::Color::White);
+                let index = (cell.y % PATTERN.len() as u16) as usize;
+                let rune = PATTERN[index][cell.x as usize % PATTERN[index].len()];
+                screen.set_cell(cell.x, cell.y, rune, style::Color::White);
             }
         }
     }

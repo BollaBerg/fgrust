@@ -4,15 +4,12 @@ use crate::screen::Screen;
 use crate::{ascii, snowflakes, states};
 use crate::input::{Input, MouseButton};
 use crate::snowflakes::Snowflake;
-use crate::transition::Transition;
 
 pub struct MainState {
     snowflakes: Vec<Snowflake>,
     phase: f64,
     prev_width: u16,
     prev_height: u16,
-
-    next: Option<usize>,
 }
 
 impl MainState {
@@ -22,7 +19,6 @@ impl MainState {
             phase: 0.0,
             prev_width: 0,
             prev_height: 0,
-            next: None,
         }
     }
 }
@@ -34,7 +30,7 @@ impl State for MainState {
         self.snowflakes = snowflakes::create(screen.width(), screen.height());
     }
 
-    fn update(&mut self, screen: &mut Screen, input: &mut Input, transition: &mut Transition, dt: f64) -> Option<Box<dyn State>> {
+    fn update(&mut self, screen: &mut Screen, input: &mut Input, dt: f64) -> Option<Box<dyn State>> {
         let screen_height = screen.height();
         let screen_width = screen.width();
 
@@ -54,11 +50,10 @@ impl State for MainState {
         draw_ground(screen);
         
         if let Some(ref day) = draw_calendar(screen, input.mouse_position(), input.is_mouse_up(MouseButton::Left)) {
-            self.next = Some(day.clone());
-            transition.change_state(crate::transition::TransitionState::Out);
-            // return match day {
-                // 1 => Some(Box::new(states::day1_state::Day1State::new())),
-                // 2 => Some(Box::new(states::day2_state::Day2State::new())),
+            // self.next = Some(day.clone());
+            let next: Option<Box<dyn State>> =  match day {
+                1 => Some(Box::new(states::day1_state::Day1State::new())),
+                2 => Some(Box::new(states::day2_state::Day2State::new())),
                 // 3 => Some(Box::new(states::day3_state::Day3State::new())),
                 // 4 => Some(Box::new(states::day4_state::Day4State::new())),
                 // 5 => Some(Box::new(states::day5_state::Day5State::new())),
@@ -81,18 +76,11 @@ impl State for MainState {
                 // 22 => Some(Box::new(states::day22_state::Day22State::new())),
                 // 23 => Some(Box::new(states::day23_state::Day23State::new())),
                 // 24 => Some(Box::new(states::day24_state::Day24State::new())),
-                // _ => None,
-            // };
-        }
-
-        if !transition.running() && self.next.is_some() {
-            transition.change_state(crate::transition::TransitionState::In);
-            if let Some(next) = self.next {
-                return match next {
-                    1 => Some(Box::new(states::day1_state::Day1State::new())),
-                    2 => Some(Box::new(states::day2_state::Day2State::new())),
-                    _ => None,
-                };
+                _ => None,
+            };
+            
+            if next.is_some() {
+                return Some(Box::new(states::transition_state::TransitionState::new(next.unwrap())));
             }
         }
 

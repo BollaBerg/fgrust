@@ -1,12 +1,12 @@
 use rand::prelude::IndexedRandom;
 use rand::Rng;
 use rand::seq::SliceRandom;
-use crate::drawing::draw_text_box;
+use crate::drawing::{draw_ascii, draw_text_box};
 use crate::input::{Input, MouseButton};
 use crate::screen::Screen;
 use crate::state_machine::State;
 use crate::states::main_state::MainState;
-use crate::transition::Transition;
+use crate::states::transition_state::TransitionState;
 
 struct Piece {
     x: u16,
@@ -81,11 +81,14 @@ impl State for Day2State {
         self.confetti = create_confetti(screen.width(), screen.height());
     }
 
-    fn update(&mut self, screen: &mut Screen, input: &mut Input, transition: &mut Transition, dt: f64) -> Option<Box<dyn State>> {
+    fn update(&mut self, screen: &mut Screen, input: &mut Input, dt: f64) -> Option<Box<dyn State>> {
 
         if let Some((width, height)) = input.resized() {
             self.confetti = create_confetti(width, height);
         }
+
+        let santa_y = (screen.height() as f64 / 2.0 - 20.0).clamp(0.0, screen.height() as f64 - 40.0) as u16;
+        draw_ascii(screen, SANTA, screen.width() - 50, santa_y);
 
         let new_selected = draw_boxes(screen, input, &self.pieces, &self.selected);
         if new_selected.len() > 0 && input.is_mouse_up(MouseButton::Left) {
@@ -124,6 +127,29 @@ impl State for Day2State {
             draw_win(screen, dt, &mut self.confetti, self.moves);
         }
 
+        let explanation1 = "Finn to like brikker og klikk på dem for å fjerne dem";
+        let explanation2 = "Målet er å fjerne alle brikkene";
+        draw_text_box(
+            screen,
+            screen.width(),
+            screen.height(),
+            explanation1,
+            0,
+            -16,
+            (0, 0),
+            false,
+        );
+        draw_text_box(
+            screen,
+            screen.width(),
+            screen.height(),
+            explanation2,
+            0,
+            -13,
+            (0, 0),
+            false,
+        );
+
         let exit = draw_text_box(
             screen,
             screen.width(),
@@ -135,7 +161,7 @@ impl State for Day2State {
             input.is_mouse_up(MouseButton::Left),
         );
         if exit && input.is_mouse_up(MouseButton::Left) {
-            return Some(Box::new(MainState::new()));
+            return Some(Box::new(TransitionState::new(Box::new(MainState::new()))));
         }
 
         None
@@ -145,7 +171,6 @@ impl State for Day2State {
     }
 }
 
-// draw boxes and return new selected
 fn draw_boxes(screen: &mut Screen, input: &mut Input, pieces: &Vec<Piece>, selected: &Vec<usize>) -> Vec<usize> {
     let num_pieces = 16;
     let box_size = 9;
@@ -210,3 +235,39 @@ fn draw_win(screen: &mut Screen, dt: f64, confetti: &mut Vec<Particle>, moves: u
         false,
     );
 }
+
+const SANTA: &str = r#"
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⣤⣤⣶⣶⣶⣶⣶⣶⣦⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⡤⠴⠶⠶⠶⠶⣶⣤⣄⣀⣤⡶⠾⠿⠿⠟⠛⠛⠛⠛⠛⠛⠻⠿⠿⢿⣿⣿⣿⣷⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡤⠞⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠓⠒⠲⠤⣤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⠻⣿⣿⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠌⣉⣳⢦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣿⣷⡄⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠛⠲⢤⣄⠀⠀⠀⠀⠀⠀⠀⠙⣿⣷⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⢳⣄⠀⠀⠀⢀⡀⠀⠹⣿⡇⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⣧⠀⠀⣿⠀⠀⠀⢻⣿⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⡟⠄⠀⠀⠀⢀⣠⠴⠒⠒⠛⠉⠉⠒⠒⠒⠒⠒⠤⣤⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢬⢧⡀⢿⣆⠀⠀⢸⣿⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣧⠀⠀⣠⣞⣉⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠖⠉⠉⠓⠺⣝⡶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⣧⡀⣹⣆⠀⠀⣿⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⣦⡞⠁⠀⠉⢳⡄⠀⠀⠀⠀⢸⡗⡞⠀⠀⠀⠀⠀⠀⠀⠙⣎⠻⣦⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⣷⡭⣿⠀⠀⣿⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣇⢀⣠⠤⠾⢧⡀⠀⠀⠀⠈⢷⣷⠤⠴⠶⢶⣦⣄⠀⠀⠘⡆⠈⠻⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⣿⣸⡇⠀⡿⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛⡏⢀⣤⣤⣤⣷⠄⠀⠀⠀⠀⠀⠀⣠⣤⣤⣀⡉⠳⢄⠀⢹⠀⠀⢹⢿⣄⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⣿⣿⠁⢀⡇⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠙⠋⣛⣿⠿⠯⣤⡀⠀⠀⠀⠀⠀⠁⠘⠛⠛⠽⣄⠈⠛⠸⠂⠀⢸⠀⠹⣦⠴⠲⣶⡀⠀⠀⠀⠘⣆⣿⡟⠀⢸⠁⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡀⡞⠁⢠⡞⠁⠀⠀⠀⠀⠀⠀⣤⣀⠀⠀⠀⠀⠀⠀⠀⠈⠁⠀⠀⠀⢀⡏⠀⢰⣏⡧⠀⠘⣷⠀⠀⠀⠀⢹⡿⠀⡀⣸⠀⠀⠀⠠⢤⣀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⠋⠁⢰⡇⠀⢸⣧⣄⣀⣀⡀⠀⠀⠀⠀⠈⢳⡀⠀⠀⠀⠀⠀⠀⢠⡖⠒⢦⡼⠀⠀⡼⢹⠀⠀⠀⣿⠀⠀⠀⠀⣼⠗⠛⠋⠁⠀⠀⠀⠀⠀⠈⠳
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⡋⠷⣄⣈⣗⣠⠴⠛⠛⠿⠿⠛⠋⠙⠶⠶⠶⠋⠹⣆⡀⠀⠀⠀⠀⠀⠉⠳⡄⠙⣆⠀⠁⢸⠀⠀⢠⡿⠀⠀⠀⣴⠿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠱
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠘⣷⣄⠀⠀⠀⠀⠀⠀⠀⠀⠸⡀⠀⠀⠀⠀⠀⠀⠛⢾⣟⡛⠭⠭⠥⠖⠃⢀⡽⠀⢸⠀⣰⠏⠀⣠⣾⣁⢀⣠⠾⠋⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢠⢧⠀⠈⠛⠷⣦⣤⣤⣤⣤⣤⡴⢆⠙⠦⣤⣤⣠⣤⣤⡀⠀⠈⠙⠓⠶⠶⠶⠞⠋⠀⢀⡾⢸⣁⣤⠖⠋⠘⢿⣻⣧⣄⢸⣇⢠⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰
+⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⡶⠦⠶⠞⠀⠀⠀⠀⠀⠀⠹⡆⠈⠉⠉⠉⠀⣠⠾⠛⠓⠦⣄⣀⡀⠀⠀⠀⣀⡠⠞⠀⢘⣇⠀⠀⠀⠀⠈⢳⡈⢻⣏⣿⣞⣆⠀⠀⢦⠀⠀⢀⣀⡠⠋
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⢈⣩⠽⠚⠃⠀⠀⠀⠀⠀⠀⢠⠙⢦⣄⣠⡤⠞⠁⠀⠀⠀⠀⠀⠉⠉⠉⠉⠉⠉⠀⠀⠀⠈⣿⡆⣠⡴⠂⠀⠀⣷⠀⣿⠈⠛⠻⠷⢦⣬⣿⠟⠋⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⣠⠴⠊⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⠈⢷⣄⡀⠀⣀⣠⠶⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢿⣿⢿⡀⠀⠀⠶⢋⣼⠏⠀⠀⠀⠀⠈⢻⣆⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⣴⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠉⠉⠉⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣿⠈⠛⠲⠴⠖⠋⠀⠀⠀⠀⠀⠀⠀⠀⢻⡆⠀⠀⠀⠀
+⠀⠀⢠⣾⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⢲⢸⣿⠀⠀⠀⠀
+⠀⢠⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡀⠀⢸⢸⠀⣿⠀⠀⠀⠀
+⠀⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⣾⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠇⠀⣸⣼⠀⡿⠀⠀⠀⠀
+⢰⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⡶⠟⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⢀⡞⠀⣰⣿⠃⠀⠀⠀⠀⠀⠀
+⢸⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡞⠀⣰⠏⣠⡾⠋⠀⠀⠀⠀⠀⠀⠀⠀
+⠘⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡼⠁⠀⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡤⣎⣴⢾⣥⠞⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢿⣿⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠀⢸⡇⠀⠀⠈⡇⠀⠀⠀⢀⣀⣠⣤⠴⠿⠛⠉⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⢻⣿⣆⠀⠀⠀⠀⠀⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠆⣾⠀⠀⠀⠀⠀⠀⠀⠀⠈⢷⣤⣤⠾⠛⠒⠚⠛⠛⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠻⣿⣷⣄⠀⠀⠀⢷⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠸⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠈⠛⢿⣧⣄⡀⠘⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⣧⠀⢻⣦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠈⠙⠻⠶⠿⣶⣄⣀⠀⠀⠀⠀⠀⣀⣤⠞⠙⢷⣄⡙⠻⣶⣤⣀⡀⠀⠀⢀⣠⡴⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣙⡻⠿⣿⠿⠿⠿⠛⠁⠀⠀⠀⠈⣙⠛⠒⢛⠛⠛⠛⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"#;
