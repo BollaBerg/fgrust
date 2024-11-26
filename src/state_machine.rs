@@ -1,9 +1,10 @@
 use crate::input::Input;
 use crate::screen::Screen;
+use crate::transition::Transition;
 
 pub trait State {
     fn enter(&mut self, screen: &mut Screen, input: &mut Input);
-    fn update(&mut self, screen: &mut Screen, input: &mut Input, dt: f64) -> Option<Box<dyn State>>;
+    fn update(&mut self, screen: &mut Screen, input: &mut Input, transition: &mut Transition, dt: f64) -> Option<Box<dyn State>>;
     fn exit(&mut self, screen: &mut Screen, input: &mut Input);
 }
 
@@ -34,9 +35,9 @@ impl StateMachine {
         }
     }
 
-    pub fn update(&mut self, screen: &mut Screen, input: &mut Input, dt: f64) {
+    pub fn update(&mut self, screen: &mut Screen, input: &mut Input, transition: &mut Transition, dt: f64) {
         if let Some(ref mut state) = self.current_state {
-            if let Some(new_state) = state.update(screen, input, dt) {
+            if let Some(new_state) = state.update(screen, input, transition, dt) {
                 self.change(screen, input, Some(new_state));
             }
         }

@@ -4,6 +4,8 @@ use crate::state_machine::State;
 use rand::{thread_rng, Rng};
 use crate::drawing::{draw_ascii, draw_question};
 use crate::states::main_state::MainState;
+use crate::states::transition_state::TransitionState;
+use crate::transition::Transition;
 
 struct Particle {
     x: f64,
@@ -45,7 +47,7 @@ impl State for Day1State {
         self.particles = create_particles(screen);
     }
 
-    fn update(&mut self, screen: &mut Screen, input: &mut Input, dt: f64) -> Option<Box<dyn State>> {
+    fn update(&mut self, screen: &mut Screen, input: &mut Input, transition: &mut Transition, dt: f64) -> Option<Box<dyn State>> {
 
         self.phase = (self.phase + dt) % 2.0;
 
@@ -73,7 +75,8 @@ impl State for Day1State {
         );
 
         if correct {
-            return Some(Box::new(MainState::new()));
+            // return Some(Box::new(MainState::new()));
+            return Some(Box::new(TransitionState::new(Box::new(MainState::new()))));
         }
 
         None

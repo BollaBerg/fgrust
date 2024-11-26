@@ -6,6 +6,7 @@ use crate::input::{Input, MouseButton};
 use crate::screen::Screen;
 use crate::state_machine::State;
 use crate::states::main_state::MainState;
+use crate::transition::Transition;
 
 struct Piece {
     x: u16,
@@ -80,7 +81,7 @@ impl State for Day2State {
         self.confetti = create_confetti(screen.width(), screen.height());
     }
 
-    fn update(&mut self, screen: &mut Screen, input: &mut Input, dt: f64) -> Option<Box<dyn State>> {
+    fn update(&mut self, screen: &mut Screen, input: &mut Input, transition: &mut Transition, dt: f64) -> Option<Box<dyn State>> {
 
         if let Some((width, height)) = input.resized() {
             self.confetti = create_confetti(width, height);
@@ -96,7 +97,7 @@ impl State for Day2State {
                 }
 
                 self.selected.push(i);
-                
+
                 if self.selected.len() == 2 {
                     self.moves += 1;
                 }

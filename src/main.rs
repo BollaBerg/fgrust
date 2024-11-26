@@ -6,8 +6,10 @@ mod drawing;
 mod cannon_game;
 mod state_machine;
 mod input;
+mod transition;
 
 mod states {
+    pub mod transition_state;
     pub mod main_state;
     pub mod day1_state;
     pub mod day2_state;
@@ -37,6 +39,8 @@ fn main() -> Result<(), Error> {
     let mut state_machine = state_machine::StateMachine::new();
     state_machine.change(&mut screen, &mut input, Some(Box::new(initial_state)));
 
+    let mut transition = transition::Transition::new();
+
     let mut dt;
     let mut previous_time = Instant::now();
 
@@ -47,13 +51,16 @@ fn main() -> Result<(), Error> {
 
         if let Some(size) = input.resized() {
             screen.resize(size);
+            transition.resize(size.0, size.1);
         }
 
         screen.clear();
 
         dt = delta_time(&mut previous_time);
-        
-        state_machine.update(&mut screen, &mut input, dt);
+
+        state_machine.update(&mut screen, &mut input, &mut transition, dt);
+        transition.update(&mut screen, dt);
+        transition.draw(&mut screen);
 
         draw_debug_info(&mut screen, &mut input, dt);
 
