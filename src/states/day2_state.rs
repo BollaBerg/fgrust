@@ -63,7 +63,7 @@ fn create_confetti(width: u16, height: u16) -> Vec<Particle> {
     for _ in 0..100 {
         let x = width as f64 / 2.0;
         let y = height as f64 / 2.0;
-        let speed = rng.gen_range(1.0..10.0);
+        let speed = rng.gen_range(1.0..30.0);
         let angle = rng.gen_range(0.0..std::f64::consts::PI * 2.0);
         let sprite = ['.', ',', '\'', '`', '^', '"', '*', 'o', 'O', '@']
             .choose(&mut rng)
@@ -96,6 +96,10 @@ impl State for Day2State {
                 }
 
                 self.selected.push(i);
+                
+                if self.selected.len() == 2 {
+                    self.moves += 1;
+                }
             }
         }
 
@@ -113,24 +117,11 @@ impl State for Day2State {
                 }
                 self.selected.clear();
             }
-
-            self.moves += 1;
         }
 
         if self.pieces.len() == 0 {
-            draw_win(screen, dt, &mut self.confetti);
+            draw_win(screen, dt, &mut self.confetti, self.moves);
         }
-
-        draw_text_box(
-            screen,
-            screen.width(),
-            screen.height(),
-            &format!("Forsøk: {}", self.moves),
-            0,
-            -12,
-            (0, 0),
-            false,
-        );
 
         let exit = draw_text_box(
             screen,
@@ -193,7 +184,7 @@ fn draw_boxes(screen: &mut Screen, input: &mut Input, pieces: &Vec<Piece>, selec
     new_selected
 }
 
-fn draw_win(screen: &mut Screen, dt: f64, confetti: &mut Vec<Particle>) {
+fn draw_win(screen: &mut Screen, dt: f64, confetti: &mut Vec<Particle>, moves: u32) {
     for particle in confetti.iter_mut() {
         particle.x += particle.speed * particle.angle.cos() * dt;
         particle.y += particle.speed * particle.angle.sin() * dt;
@@ -206,11 +197,12 @@ fn draw_win(screen: &mut Screen, dt: f64, confetti: &mut Vec<Particle>) {
         screen.set_cell(particle.x as u16, particle.y as u16, particle.sprite, crossterm::style::Color::White);
     }
 
+    let str = format!("Gratulerer! Du klarte det på {} trekk!", moves);
     draw_text_box(
         screen,
         screen.width(),
         screen.height(),
-        "Gratulerer!",
+        &str,
         0,
         0,
         (0, 0),
