@@ -56,7 +56,7 @@ impl State for MainState {
             let next: Option<Box<dyn State>> =  match day {
                 1 => Some(Box::new(states::day1_state::Day1State::new())),
                 2 => Some(Box::new(states::day2_state::Day2State::new())),
-                // 3 => Some(Box::new(states::day3_state::Day3State::new())),
+                3 => Some(Box::new(states::day3_state::Day3State::new())),
                 // 4 => Some(Box::new(states::day4_state::Day4State::new())),
                 // 5 => Some(Box::new(states::day5_state::Day5State::new())),
                 // 6 => Some(Box::new(states::day6_state::Day6State::new())),
