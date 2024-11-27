@@ -119,6 +119,11 @@ impl Screen {
         let new_height = height.clamp(40, 70);
         (new_width, new_height)
     }
+    
+    pub fn get_cell(&self, x: u16, y: u16) -> Cell {
+        let index = self.xy_to_index(x, y);
+        self.buffer[index].clone()
+    }
 
     pub fn set_cell(&mut self, x: u16, y: u16, c: char, color: style::Color) {
         let index = self.xy_to_index(x, y);
