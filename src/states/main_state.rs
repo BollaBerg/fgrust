@@ -43,17 +43,20 @@ impl State for MainState {
         self.phase += dt;
 
         snowflakes::update(&mut self.snowflakes, screen_width, screen_height, self.phase, dt);
+        if input.is_mouse_down(MouseButton::Left) {
+            snowflakes::spawn_mouse_snow_flakes(&mut self.snowflakes, input.mouse_position())
+        }
 
         draw_ascii(screen, ascii::SANTA, 2, screen_height - 20);
         snowflakes::draw(screen, &self.snowflakes);
         draw_ascii(screen, ascii::SYSTEK, screen_width / 2 - 32, 1);
         draw_ground(screen);
-        
+
         if let Some(ref day) = draw_calendar(screen, input.mouse_position(), input.is_mouse_up(MouseButton::Left)) {
             let next: Option<Box<dyn State>> =  match day {
                 1 => Some(Box::new(states::day1_state::Day1State::new())),
                 2 => Some(Box::new(states::day2_state::Day2State::new())),
-                // 3 => Some(Box::new(states::day3_state::Day3State::new())),
+                3 => Some(Box::new(states::day3_state::Day3State::new())),
                 // 4 => Some(Box::new(states::day4_state::Day4State::new())),
                 // 5 => Some(Box::new(states::day5_state::Day5State::new())),
                 // 6 => Some(Box::new(states::day6_state::Day6State::new())),
@@ -74,10 +77,10 @@ impl State for MainState {
                 // 21 => Some(Box::new(states::day21_state::Day21State::new())),
                 // 22 => Some(Box::new(states::day22_state::Day22State::new())),
                 // 23 => Some(Box::new(states::day23_state::Day23State::new())),
-                // 24 => Some(Box::new(states::day24_state::Day24State::new())),
+                24 => Some(Box::new(states::day24_state::Day24State::new())),
                 _ => None,
             };
-            
+
             if next.is_some() {
                 return Some(Box::new(states::transition_state::TransitionState::new(next.unwrap(), None)));
             }

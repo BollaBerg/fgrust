@@ -138,10 +138,8 @@ impl Input {
                 }
             }
             else if let Event::Mouse(event) = event {
-                if let event::MouseEventKind::Moved = event.kind {
-                    self.mouse_position = (event.column, event.row);
-                }
-                else if let event::MouseEventKind::Down(button) = event.kind {
+                self.mouse_position = (event.column, event.row);
+                if let event::MouseEventKind::Down(button) = event.kind {
                     self.mousemap.insert(button, Some(InputEvent::Down));
                 }
                 else if let event::MouseEventKind::Up(button) = event.kind {
