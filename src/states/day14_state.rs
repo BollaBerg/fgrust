@@ -3,6 +3,8 @@ use crate::drawing::{draw_ascii, draw_text_box};
 use crate::input::{Input, MouseButton};
 use crate::screen::Screen;
 use crate::state_machine::State;
+use crate::states::main_state::MainState;
+use crate::states::transition_state::TransitionState;
 
 pub struct Day14State {
     found_it: bool,
@@ -27,7 +29,7 @@ impl State for Day14State {
         draw_ascii(screen, NORWAY, center_x - NORWAY_WIDTH / 2, center_y - NORWAY_HEIGHT / 2);
 
         if !self.found_it {
-            let question = "Trykk på Hamar på kartet";
+            let question = "  Finn Hamar på kartet  ";
             draw_text_box(screen, screen.width(), screen.height(), &question, -20, -15, (0, 0), false);
 
             if input.is_mouse_down(MouseButton::Left) {
@@ -38,8 +40,22 @@ impl State for Day14State {
                 }
             }
         } else {
-            let question = "Du fant det!";
-            draw_text_box(screen, screen.width(), screen.height(), &question, 0, 0, (0, 0), false);
+            let question = " Du fant det! ";
+            draw_text_box(screen, screen.width(), screen.height(), &question, -20, -15, (0, 0), false);
+        }
+
+        let exit = draw_text_box(
+            screen,
+            screen.width(),
+            screen.height(),
+            "Tilbake",
+            -20,
+            -12,
+            input.mouse_position(),
+            input.is_mouse_up(MouseButton::Left),
+        );
+        if exit && input.is_mouse_up(MouseButton::Left) {
+            return Some(Box::new(TransitionState::new(Box::new(MainState::new()), None)));
         }
 
         None
