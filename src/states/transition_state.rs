@@ -2,7 +2,7 @@ use std::time::Duration;
 use crate::input::Input;
 use crate::screen::{Cell, Screen};
 use crate::state_machine::State;
-use crate::transition::Transition;
+use crate::transition::{Transition, TransitionDirection};
 
 pub struct TransitionState {
     next_state: Option<Box<dyn State>>,
@@ -11,10 +11,10 @@ pub struct TransitionState {
 }
 
 impl TransitionState {
-    pub fn new(next_state: Box<dyn State>) -> Self {
+    pub fn new(next_state: Box<dyn State>, state: Option<TransitionDirection>) -> Self {
         TransitionState {
-            next_state : Some(next_state),
-            transition: Transition::new(Duration::from_secs(2)),
+            next_state: Some(next_state),
+            transition: Transition::new(Duration::from_secs(2), state),
             prev_cells: vec![],
         }
     }
@@ -23,13 +23,24 @@ impl TransitionState {
 impl State for TransitionState {
     fn enter(&mut self, screen: &mut Screen, _input: &mut Input) {
         self.transition.resize(screen.width(), screen.height());
-        self.transition.change_state(crate::transition::TransitionState::In);
+        if self.transition.state().is_none() {
+            self.transition.change_state(TransitionDirection::In);
+        }
         self.prev_cells = screen.clone_buffer();
+        
+        if let Some(next_state) = self.next_state.as_mut() {
+            next_state.enter(screen, _input);
+        }
     }
 
     fn update(&mut self, screen: &mut Screen, _input: &mut Input, dt: f64) -> Option<Box<dyn State>> {
+        
+        if let Some((width, height)) = _input.resized() {
+            self.transition.resize(width, height);
+        }
+        
         match self.transition.state() {
-            Some(crate::transition::TransitionState::In) => {
+            Some(TransitionDirection::In) => {
                 let done = self.transition.update(screen, dt);
 
                 for (i, cell) in self.prev_cells.iter().enumerate() {
@@ -38,14 +49,16 @@ impl State for TransitionState {
                 }
 
                 if done {
-                    self.transition.change_state(crate::transition::TransitionState::Out);
+                    self.transition.change_state(TransitionDirection::Out);
                 }
             }
-            Some(crate::transition::TransitionState::Out) => {
+            Some(TransitionDirection::Out) => {
                 let done = self.transition.update(screen, dt);
                 let next_state = self.next_state.as_mut().unwrap();
-                // update it
-                next_state.update(screen, _input, dt);
+
+                if let Some(next_state) = next_state.update(screen, _input, dt) {
+                    return Some(next_state);
+                }
 
                 if done {
                     return self.next_state.take();

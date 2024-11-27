@@ -161,7 +161,7 @@ impl State for Day2State {
             input.is_mouse_up(MouseButton::Left),
         );
         if exit && input.is_mouse_up(MouseButton::Left) {
-            return Some(Box::new(TransitionState::new(Box::new(MainState::new()))));
+            return Some(Box::new(TransitionState::new(Box::new(MainState::new()), None)));
         }
 
         None

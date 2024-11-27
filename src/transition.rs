@@ -7,7 +7,7 @@ struct Cell {
     y: u16,
     alive: bool,
 }
-pub enum TransitionState {
+pub enum TransitionDirection {
     In,
     Out,
 }
@@ -16,16 +16,16 @@ pub struct Transition {
     cells: Vec<Cell>,
     duration: Duration,
     timer: f64,
-    state: Option<TransitionState>,
+    state: Option<TransitionDirection>,
 }
 
 impl Transition {
-    pub fn new(duration: Duration) -> Transition {
+    pub fn new(duration: Duration, state: Option<TransitionDirection>) -> Transition {
         Transition {
             cells: Vec::new(),
             duration,
             timer: 0.0,
-            state: None,
+            state,
         }
     }
 
@@ -35,22 +35,22 @@ impl Transition {
             .collect();
     }
 
-    pub fn state(&self) -> Option<TransitionState> {
+    pub fn state(&self) -> Option<TransitionDirection> {
         match self.state {
-            Some(TransitionState::In) => Some(TransitionState::In),
-            Some(TransitionState::Out) => Some(TransitionState::Out),
+            Some(TransitionDirection::In) => Some(TransitionDirection::In),
+            Some(TransitionDirection::Out) => Some(TransitionDirection::Out),
             None => None,
         }
     }
 
-    pub fn change_state(&mut self, state: TransitionState) {
+    pub fn change_state(&mut self, state: TransitionDirection) {
         self.state = Some(state);
         self.timer = 0.0;
 
         for cell in &mut self.cells {
             cell.alive = match self.state {
-                Some(TransitionState::In) => false,
-                Some(TransitionState::Out) => true,
+                Some(TransitionDirection::In) => false,
+                Some(TransitionDirection::Out) => true,
                 None => false,
             };
         }
@@ -71,8 +71,8 @@ impl Transition {
             let distance = distance / 1.5;
 
             cell.alive = match self.state {
-                Some(TransitionState::In) => distance < normalized_timer,
-                Some(TransitionState::Out) => distance > normalized_timer,
+                Some(TransitionDirection::In) => distance < normalized_timer,
+                Some(TransitionDirection::Out) => distance > normalized_timer,
                 None => false,
             };
         }

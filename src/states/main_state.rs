@@ -80,7 +80,7 @@ impl State for MainState {
             };
             
             if next.is_some() {
-                return Some(Box::new(states::transition_state::TransitionState::new(next.unwrap())));
+                return Some(Box::new(states::transition_state::TransitionState::new(next.unwrap(), None)));
             }
         }
 

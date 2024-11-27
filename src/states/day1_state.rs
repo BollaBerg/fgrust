@@ -43,7 +43,7 @@ impl Day1State {
 
 impl State for Day1State {
     fn enter(&mut self, screen: &mut Screen, input: &mut Input) {
-        self.particles = create_particles(screen);
+        self.particles = create_particles();
     }
 
     fn update(&mut self, screen: &mut Screen, input: &mut Input, dt: f64) -> Option<Box<dyn State>> {
@@ -74,8 +74,7 @@ impl State for Day1State {
         );
 
         if correct {
-            // return Some(Box::new(MainState::new()));
-            return Some(Box::new(TransitionState::new(Box::new(MainState::new()))));
+            return Some(Box::new(TransitionState::new(Box::new(MainState::new()), None)));
         }
 
         None
@@ -85,7 +84,7 @@ impl State for Day1State {
     }
 }
 
-fn create_particles(screen: &mut Screen) -> Vec<Particle> {
+fn create_particles() -> Vec<Particle> {
     let mut particles = Vec::new();
     for i in 0..3 {
         particles.push(Particle {

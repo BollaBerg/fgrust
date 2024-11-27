@@ -15,6 +15,7 @@ use std::io::{stdout, Error};
 use std::time::Instant;
 
 use drawing::draw_debug_info;
+use crate::states::transition_state::TransitionState;
 
 fn delta_time(previous_time: &mut Instant) -> f64 {
     let new_time = Instant::now();
@@ -29,7 +30,7 @@ fn main() -> Result<(), Error> {
     let mut screen = Screen::new(stdout(), terminal::size()?);
     screen.init()?;
 
-    let initial_state = states::main_state::MainState::new();
+    let initial_state = TransitionState::new(Box::new(states::main_state::MainState::new()), Some(transition::TransitionDirection::Out));
     let mut state_machine = state_machine::StateMachine::new();
     state_machine.change(&mut screen, &mut input, Some(Box::new(initial_state)));
 
