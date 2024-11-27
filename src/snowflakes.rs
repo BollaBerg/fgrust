@@ -54,15 +54,13 @@ fn prune_snow_flakes(snow_flakes: &mut Vec<Snowflake>) {
 pub fn spawn_mouse_snow_flakes(snow_flakes: &mut Vec<Snowflake>, mouse_position: (u16, u16)) {
     if rand::random::<f64>() < SNOW_FLAKE_SPAWN_PROBABILITY {
         const SPAWN_SPREAD: f64 = 6.0;
-        for i in 0..500 {
-            snow_flakes.push(Snowflake {
-                x: mouse_position.0 as f64 + (rand::random::<f64>() * SPAWN_SPREAD),
-                y: mouse_position.1 as f64 + (rand::random::<f64>() * SPAWN_SPREAD) - 1.0,
-                speed: (rand::random::<f64>() * 0.5) + 2.8,
-                sprite: SNOW_FLAKE_SPRITES
-                    [(rand::random::<u16>() % SNOW_FLAKE_SPRITES.len() as u16) as usize],
-            });
-        }
+        snow_flakes.push(Snowflake {
+            x: mouse_position.0 as f64 + (rand::random::<f64>() * SPAWN_SPREAD),
+            y: mouse_position.1 as f64 + (rand::random::<f64>() * SPAWN_SPREAD) - 1.0,
+            speed: (rand::random::<f64>() * 0.5) + 2.8,
+            sprite: SNOW_FLAKE_SPRITES
+                [(rand::random::<u16>() % SNOW_FLAKE_SPRITES.len() as u16) as usize],
+        });
     }
 }
 
