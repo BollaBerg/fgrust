@@ -1,6 +1,7 @@
 extern crate crossterm;
 
 use crossterm::style;
+use crossterm::style::Color;
 use crate::input::{Input, InputEvent, MouseButton};
 use crate::screen::Screen;
 
@@ -10,14 +11,10 @@ pub fn draw_debug_info(
     dt: f64,
 ) {
     let fps_str = format!("FPS: {:.0}", 1.0 / dt);
-    for (i, c) in fps_str.chars().enumerate() {
-        screen.set_cell(i as u16, 0, c, style::Color::White);
-    }
+    screen.draw_text(0, 0, &fps_str, Color::White);
 
     let mouse_pos_str = format!("Mouse: ({}, {})", input.mouse_position().0, input.mouse_position().1);
-    for (i, c) in mouse_pos_str.chars().enumerate() {
-        screen.set_cell(i as u16, 1, c, style::Color::White);
-    }
+    screen.draw_text(0, 1, &mouse_pos_str, Color::White);
 
     let mouse_buttons = vec![
         (input.is_mouse_down(MouseButton::Left), "Left"),

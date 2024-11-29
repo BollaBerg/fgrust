@@ -139,6 +139,12 @@ impl Screen {
         self.buffer[index].set(c, color);
     }
 
+    pub fn draw_text(&mut self, x: u16, y: u16, text: &str, color: style::Color) {
+        for (i, c) in text.chars().enumerate() {
+            self.set_cell(x + i as u16, y, c, color);
+        }
+    }
+
     pub fn xy_to_index(&self, x: u16, y: u16) -> usize {
         (y * self.width + x) as usize
     }
