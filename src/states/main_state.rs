@@ -65,7 +65,7 @@ impl State for MainState {
                 // 9 => Some(Box::new(states::day9_state::Day9State::new())),
                 // 10 => Some(Box::new(states::day10_state::Day10State::new())),
                 // 11 => Some(Box::new(states::day11_state::Day11State::new())),
-                // 12 => Some(Box::new(states::day12_state::Day12State::new())),
+                12 => Some(Box::new(states::day12_state::Day12State::new())),
                 // 13 => Some(Box::new(states::day13_state::Day13State::new())),
                 14 => Some(Box::new(states::day14_state::Day14State::new())),
                 // 15 => Some(Box::new(states::day15_state::Day15State::new())),

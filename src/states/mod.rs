@@ -4,5 +4,6 @@ pub mod day1_state;
 pub mod day2_state;
 pub mod day3_state;
 pub mod day4_state;
+pub mod day12_state;
 pub mod day14_state;
 pub mod day24_state;
