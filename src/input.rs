@@ -117,6 +117,12 @@ impl Input {
                 true
             }
         });
+
+        for (_, event) in self.keymap.iter_mut() {
+            if let Some(InputEvent::Down) = event {
+                *event = Some(InputEvent::Up);
+            }
+        }
         
         self.resize = None;
         
