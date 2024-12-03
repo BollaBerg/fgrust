@@ -125,6 +125,19 @@ impl Screen {
         self.buffer[index].clone()
     }
 
+    pub fn set_cell_safe(&mut self, x: i16, y: i16, c: char, color: style::Color) {
+        let width = self.width as i16;
+        let height = self.height as i16;
+        if x >= width || y >= height {
+            return;
+        }
+        if x < 0 || y < 0 {
+            return;
+        }
+
+        self.set_cell(x.clamp(0, width) as u16, y.clamp(0, height) as u16, c, color);
+    }
+    
     pub fn set_cell(&mut self, x: u16, y: u16, c: char, color: style::Color) {
         let index = self.xy_to_index(x, y);
 

@@ -52,7 +52,9 @@ fn main() -> Result<(), Error> {
 
         state_machine.update(&mut screen, &mut input, dt);
 
-        draw_debug_info(&mut screen, &mut input, dt);
+        if cfg!(debug_assertions) {
+            draw_debug_info(&mut screen, &mut input, dt);
+        }
 
         screen.render();
 

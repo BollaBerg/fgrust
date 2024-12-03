@@ -1,5 +1,5 @@
 use crossterm::style;
-use crate::drawing::{draw_ascii, draw_text_box};
+use crate::drawing::{draw_ascii, draw_ascii_safe, draw_text_box};
 use crate::input::{Input, MouseButton};
 use crate::screen::Screen;
 use crate::state_machine::State;
@@ -8,12 +8,14 @@ use crate::states::transition_state::TransitionState;
 
 pub struct Day14State {
     found_it: bool,
+    timer: f64,
 }
 
 impl Day14State {
     pub fn new() -> Self {
         Day14State {
             found_it: false,
+            timer: 0.0,
         }
     }
 }
@@ -24,23 +26,32 @@ impl State for Day14State {
 
     fn update(&mut self, screen: &mut Screen, input: &mut Input, dt: f64) -> Option<Box<dyn State>> {
 
+        let (mouse_x, mouse_y) = input.mouse_position();
+
         let center_x = screen.width() / 2;
         let center_y = screen.height() / 2;
         draw_ascii(screen, NORWAY, center_x - NORWAY_WIDTH / 2, center_y - NORWAY_HEIGHT / 2);
 
+        let mx = mouse_x as i16;
+        let my = mouse_y as i16;
+        draw_ascii_safe(screen, "--", mx-2, my+0);
+        draw_ascii_safe(screen, "|", mx+0, my-1);
+        draw_ascii_safe(screen, "--", mx+1, my+0);
+        draw_ascii_safe(screen, "|", mx+0, my+1);
+
         if !self.found_it {
+            self.timer += dt;
             let question = "  Finn Hamar på kartet  ";
             draw_text_box(screen, screen.width(), screen.height(), &question, -20, -15, (0, 0), false);
 
             if input.is_mouse_down(MouseButton::Left) {
-                let (mouse_x, mouse_y) = input.mouse_position();
                 let hit = screen.get_cell(mouse_x, mouse_y);
                 if hit.rune == HIT_CHAR {
                     self.found_it = true;
                 }
             }
         } else {
-            let question = " Du fant det! ";
+            let question = format!("  Du fant Hamar på {:.2} sekunder!  ", self.timer);
             draw_text_box(screen, screen.width(), screen.height(), &question, -20, -15, (0, 0), false);
         }
 

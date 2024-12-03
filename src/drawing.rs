@@ -56,7 +56,7 @@ pub fn draw_ground(screen: &mut Screen) {
     }
 }
 
-pub fn draw_ascii(screen: &mut Screen, ascii: &str, x: u16, y: u16) {
+pub fn draw_ascii_safe(screen: &mut Screen, ascii: &str, x: i16, y: i16) {
     let lines = ascii.lines();
 
     for (i, line) in lines.enumerate() {
@@ -64,10 +64,13 @@ pub fn draw_ascii(screen: &mut Screen, ascii: &str, x: u16, y: u16) {
             if c == ' ' {
                 continue;
             }
-
-            screen.set_cell(x + j as u16, y + i as u16, c, style::Color::White);
+            screen.set_cell_safe(x + j as i16, y + i as i16, c, style::Color::White);
         }
     }
+}
+
+pub fn draw_ascii(screen: &mut Screen, ascii: &str, x: u16, y: u16) {
+    draw_ascii_safe(screen, ascii, x as i16, y as i16);
 }
 
 pub fn draw_question(screen: &mut Screen, mouse_position: (u16, u16), mouse_down: bool,
@@ -144,19 +147,25 @@ pub fn draw_question(screen: &mut Screen, mouse_position: (u16, u16), mouse_down
 
 pub fn draw_text_box(screen: &mut Screen, width: u16, height: u16, q: &str, x_offset: i16, y_offset: i16, mouse_position: (u16, u16), mouse_down: bool) -> bool {
     let question = q;
-    let x_origin = ((width as i16 - question.len() as i16) / 2 + x_offset) as u16;
-    let y_origin = (height as i16 / 2 + y_offset) as u16;
+    let len = question.len() as i16;
+    let w = width as i16;
+    let h = height as i16;
+    let x_origin = (w - len) / 2 + x_offset;
+    let y_origin = h / 2 + y_offset;
 
     let fancy_top_border = "╭".to_string() + &"─".repeat(question.len() + 4) + "╮";
     let fancy_bottom_border = "╰".to_string() + &"─".repeat(question.len() + 4) + "╯";
 
     let mut color = style::Color::White;
 
+    let mx = mouse_position.0 as i16;
+    let my = mouse_position.1 as i16;
+
     let mut is_hovered = false;
-    if mouse_position.0 >= x_origin - 3 &&
-        mouse_position.0 <= x_origin + question.len() as u16 + 2 &&
-        mouse_position.1 >= y_origin - 1 &&
-        mouse_position.1 <= y_origin + 1 {
+    if mx >= x_origin - 3 &&
+        mx <= x_origin + len + 2 &&
+        my >= y_origin - 1 &&
+        my <= y_origin + 1 {
 
         if mouse_down {
             color = style::Color::Rgb {
@@ -177,35 +186,47 @@ pub fn draw_text_box(screen: &mut Screen, width: u16, height: u16, q: &str, x_of
     for i in 0..3 {
         let line = " ".repeat(question.len() + 4);
         for (j, c) in line.chars().enumerate() {
-            screen.set_cell(x_origin - 2 + j as u16, y_origin + i as u16, c, style::Color::White);
+            let x_offset = x_origin - 2 + j as i16;
+            let y_offset = y_origin - 1 + i as i16;
+            screen.set_cell_safe(x_offset, y_offset, c, style::Color::White);
         }
     }
 
     if y_origin > 0 {
         let line = &fancy_top_border;
         for (j, c) in line.chars().enumerate() {
-            screen.set_cell(x_origin - 3 + j as u16, y_origin - 1, c, color);
+            let x_offset = x_origin - 3 + j as i16;
+            let y_offset = y_origin - 1i16;
+            screen.set_cell_safe(x_offset, y_offset, c, color);
         }
     }
 
-    if y_origin < height - 1
+    if y_origin < h - 1
     {
         let line = &fancy_bottom_border;
         for (j, c) in line.chars().enumerate() {
-            screen.set_cell(x_origin - 3 + j as u16, y_origin + 1, c, color);
+            let x_offset = x_origin - 3 + j as i16;
+            let y_offset = y_origin + 1i16;
+            screen.set_cell_safe(x_offset, y_offset, c, color);
         }
     }
 
     if x_origin > 3 {
-        screen.set_cell(x_origin - 3, y_origin, '│', color);
+        let x_offset = x_origin - 3i16;
+        let y_offset = y_origin;
+        screen.set_cell_safe(x_offset, y_offset, '│', color);
     }
 
-    if x_origin + question.len() as u16 + 2 < width {
-        screen.set_cell(x_origin + question.len() as u16 + 2, y_origin, '│', color);
+    if x_origin + len + 2 < w {
+        let x_offset = x_origin + len + 2i16;
+        let y_offset = y_origin;
+        screen.set_cell_safe(x_offset, y_offset, '│', color);
     }
 
     for (i, c) in question.chars().enumerate() {
-        screen.set_cell(x_origin + i as u16, y_origin, c, color);
+        let x_offset = x_origin + i as i16;
+        let y_offset = y_origin;
+        screen.set_cell_safe(x_offset, y_offset, c, color);
     }
 
     is_hovered

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [[bin]]
-name = "my_project"
+name = "julekalender"
 path = "src/main.rs"
 
 [dependencies]

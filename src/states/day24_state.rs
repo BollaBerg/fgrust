@@ -2,7 +2,7 @@ use crate::input::{Input, MouseButton};
 use crate::screen::Screen;
 use crate::state_machine::State;
 use rand::{thread_rng, Rng};
-use crate::drawing::{draw_ascii, draw_question, draw_text_box};
+use crate::drawing::{draw_ascii, draw_ascii_safe, draw_question, draw_text_box};
 use crate::input;
 use crate::states::main_state::MainState;
 use crate::states::transition_state::TransitionState;
@@ -23,14 +23,16 @@ impl State for Day24State {
 
     fn update(&mut self, screen: &mut Screen, input: &mut Input, dt: f64) -> Option<Box<dyn State>> {
 
-        draw_ascii(screen, FATHER_CHRISTMAS, 50, screen.height() - 51);
+        let h = screen.height() as i16;
+        let w = screen.width() as i16;
+        draw_ascii_safe(screen, FATHER_CHRISTMAS, w / 2 - WIDTH / 2, h / 2 - HEIGHT / 2);
         draw_text_box(
             screen,
             screen.width(),
             screen.height(),
             &self.title_text,
             0,
-            -25,
+            10,
             (0, 0),
             false,
         );
@@ -45,6 +47,9 @@ impl State for Day24State {
     fn exit(&mut self, screen: &mut Screen, input: &mut Input) {
     }
 }
+
+pub const WIDTH: i16 = 101;
+pub const HEIGHT: i16 = 60;
 
 pub const FATHER_CHRISTMAS: &str = r#"
 %*++++=++#+-+==+====-=*####**+=+**+#*#%%#+*##%@@%###****+###***##%%%%%#%%%*#####%%#**##%#*##*#*+=+**
