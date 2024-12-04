@@ -1,7 +1,7 @@
 use std::io::{Stdout, Write};
 use crossterm::{cursor, queue, style, terminal};
 use crossterm::cursor::MoveTo;
-use crossterm::event::{DisableMouseCapture, EnableMouseCapture};
+use crossterm::event::{DisableMouseCapture, EnableMouseCapture, KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags};
 use crossterm::style::{SetForegroundColor, Stylize};
 use crossterm::terminal::{disable_raw_mode, enable_raw_mode, Clear, ClearType};
 
@@ -71,7 +71,7 @@ impl Screen {
             terminal::EnterAlternateScreen,
             cursor::Hide,
             EnableMouseCapture,
-            Clear(ClearType::All)
+            Clear(ClearType::All),
         )?;
         Ok(())
     }
@@ -83,7 +83,7 @@ impl Screen {
             self.stdout,
             cursor::Show,
             terminal::LeaveAlternateScreen,
-            DisableMouseCapture
+            DisableMouseCapture,
         )?;
 
         self.stdout.flush()?;

@@ -17,14 +17,19 @@ pub fn draw_debug_info(
     screen.draw_text(0, 1, &mouse_pos_str, Color::White);
 
     let mouse_buttons = vec![
-        (input.is_mouse_down(MouseButton::Left), "Left"),
-        (input.is_mouse_down(MouseButton::Middle), "Middle"),
-        (input.is_mouse_down(MouseButton::Right), "Right"),
+        (input.mouse_state(MouseButton::Left), "Left"),
+        (input.mouse_state(MouseButton::Middle), "Middle"),
+        (input.mouse_state(MouseButton::Right), "Right"),
     ];
 
-    for (i, (is_down, button)) in mouse_buttons.iter().enumerate() {
-        let mouse_down_str = format!("Mouse {}: {}", button, is_down);
-        for (j, c) in mouse_down_str.chars().enumerate() {
+    for (i, (input_event, button)) in mouse_buttons.iter().enumerate() {
+        let mouse_state_str = match input_event {
+            Some(InputEvent::Down) => format!("{}: Down", button),
+            Some(InputEvent::Up) => format!("{}: Up", button),
+            Some(InputEvent::None) => format!("{}: None", button),
+            None => format!("{}: None", button),
+        };
+        for (j, c) in mouse_state_str.chars().enumerate() {
             screen.set_cell(j as u16, (i + 2) as u16, c, style::Color::White);
         }
     }
@@ -45,6 +50,12 @@ pub fn draw_debug_info(
                     screen.set_cell(j as u16, (i + 5) as u16, c, style::Color::White);
                 }
             }
+            Some(InputEvent::None) => {
+                let key_str = format!("Key {}: None", key);
+                for (j, c) in key_str.chars().enumerate() {
+                    screen.set_cell(j as u16, (i + 5) as u16, c, style::Color::White);
+                }
+            }
             None => {}
         }
     }
@@ -56,7 +67,7 @@ pub fn draw_ground(screen: &mut Screen) {
     }
 }
 
-pub fn draw_ascii_safe(screen: &mut Screen, ascii: &str, x: i16, y: i16) {
+pub fn draw_ascii_safe_c(screen: &mut Screen, ascii: &str, x: i16, y: i16, color: Color) {
     let lines = ascii.lines();
 
     for (i, line) in lines.enumerate() {
@@ -64,9 +75,13 @@ pub fn draw_ascii_safe(screen: &mut Screen, ascii: &str, x: i16, y: i16) {
             if c == ' ' {
                 continue;
             }
-            screen.set_cell_safe(x + j as i16, y + i as i16, c, style::Color::White);
+            screen.set_cell_safe(x + j as i16, y + i as i16, c, color);
         }
     }
+}
+
+pub fn draw_ascii_safe(screen: &mut Screen, ascii: &str, x: i16, y: i16) {
+    draw_ascii_safe_c(screen, ascii, x, y, style::Color::White);
 }
 
 pub fn draw_ascii(screen: &mut Screen, ascii: &str, x: u16, y: u16) {

@@ -4,9 +4,11 @@ use std::time::Duration;
 use crossterm::event;
 use crossterm::event::{read, Event};
 
+#[derive(Clone)]
 pub enum InputEvent {
     Down,
     Up,
+    None,
 }
 
 pub enum MouseButton {
@@ -67,6 +69,16 @@ impl Input {
         false
     }
 
+    pub fn mouse_state(&self, button: MouseButton) -> Option<InputEvent> {
+        let button = match button {
+            MouseButton::Left => event::MouseButton::Left,
+            MouseButton::Right => event::MouseButton::Right,
+            MouseButton::Middle => event::MouseButton::Middle,
+        };
+
+        self.mousemap.get(&button).cloned().unwrap_or(None)
+    }
+
     pub fn is_mouse_down(&self, button: MouseButton) -> bool {
         let button = match button {
             MouseButton::Left => event::MouseButton::Left,
@@ -109,6 +121,12 @@ impl Input {
                 *event = None;
             }
         }
+
+        for (_, event) in self.mousemap.iter_mut() {
+            if let Some(InputEvent::Up) = event {
+                *event = Some(InputEvent::None);
+            }
+        }
         
         self.keymap.retain(|_, event| {
             if let Some(InputEvent::Up) = event {
@@ -123,7 +141,7 @@ impl Input {
                 *event = Some(InputEvent::Up);
             }
         }
-        
+
         self.resize = None;
         
         if event::poll(Duration::from_millis(0))? {
@@ -139,20 +157,24 @@ impl Input {
                 if event.kind == event::KeyEventKind::Press {
                     self.keymap.insert(event.code, Some(InputEvent::Down));
                 }
-                else if event.kind == event::KeyEventKind::Release {
+                if event.kind == event::KeyEventKind::Release {
                     self.keymap.insert(event.code, Some(InputEvent::Up));
                 }
             }
-            else if let Event::Mouse(event) = event {
+
+            if let Event::Mouse(event) = event {
                 self.mouse_position = (event.column, event.row);
+
                 if let event::MouseEventKind::Down(button) = event.kind {
                     self.mousemap.insert(button, Some(InputEvent::Down));
                 }
-                else if let event::MouseEventKind::Up(button) = event.kind {
+
+                if let event::MouseEventKind::Up(button) = event.kind {
                     self.mousemap.insert(button, Some(InputEvent::Up));
                 }
             }
-            else if let Event::Resize(width, height) = event {
+
+            if let Event::Resize(width, height) = event {
                 self.resize = Some((width, height));
             }
         }

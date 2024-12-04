@@ -59,7 +59,7 @@ impl State for MainState {
                 3 => Some(Box::new(states::day3_state::Day3State::new())),
                 4 => Some(Box::new(states::day4_state::Day4State::new(screen_width))),
                 5 => Some(Box::new(states::day5_state::Day5State::new())),
-                // 6 => Some(Box::new(states::day6_state::Day6State::new())),
+                6 => Some(Box::new(states::day6_state::Day6State::new(screen))),
                 // 7 => Some(Box::new(states::day7_state::Day7State::new())),
                 // 8 => Some(Box::new(states::day8_state::Day8State::new())),
                 // 9 => Some(Box::new(states::day9_state::Day9State::new())),
